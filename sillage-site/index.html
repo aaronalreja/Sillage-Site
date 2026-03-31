@@ -153,9 +153,9 @@
   /* GRID */
   .ai-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 1.5px;
-    background: rgba(201,169,110,0.15);
+    background: var(--obsidian);
     border: 1px solid rgba(201,169,110,0.15);
     margin-top: 3rem;
   }
@@ -320,12 +320,10 @@
     <div class="ai-card" onclick="openPanel('recommend')"><span class="ai-card-icon">✦</span><h3 class="ai-card-title">Scent Recommender</h3><p class="ai-card-desc">Describe your mood, memories, or preferences and receive bespoke fragrance recommendations curated by AI.</p><button class="ai-card-btn">Discover →</button></div>
     <div class="ai-card" onclick="openPanel('analyze')"><span class="ai-card-icon">◈</span><h3 class="ai-card-title">Fragrance Analyzer</h3><p class="ai-card-desc">Input any perfume's notes and receive an in-depth breakdown of its olfactory profile, longevity, and occasions.</p><button class="ai-card-btn">Analyze →</button></div>
     <div class="ai-card" onclick="openPanel('layer')"><span class="ai-card-icon">⬡</span><h3 class="ai-card-title">Layering Advisor</h3><p class="ai-card-desc">Learn which fragrances from your collection harmonize beautifully when layered together.</p><button class="ai-card-btn">Explore →</button></div>
+    <div class="ai-card" onclick="openPanel('dupe')"><span class="ai-card-icon">⊜</span><h3 class="ai-card-title">Dupe Finder</h3><p class="ai-card-desc">Discover affordable clones of expensive designer fragrances.</p><button class="ai-card-btn">Find Dupes →</button></div>
     <div class="ai-card" onclick="openPanel('notes')"><span class="ai-card-icon">◉</span><h3 class="ai-card-title">Notes Educator</h3><p class="ai-card-desc">Ask anything about fragrance ingredients — from rare oud to synthetic musks — and receive expert explanations.</p><button class="ai-card-btn">Learn →</button></div>
     <div class="ai-card" onclick="openPanel('occasion')"><span class="ai-card-icon">◇</span><h3 class="ai-card-title">Occasion Matcher</h3><p class="ai-card-desc">Describe an upcoming event or season and discover the perfect fragrance to wear.</p><button class="ai-card-btn">Match →</button></div>
     <div class="ai-card" onclick="openPanel('decode')"><span class="ai-card-icon">⟡</span><h3 class="ai-card-title">Scent Memory Decoder</h3><p class="ai-card-desc">Describe a smell from memory and AI identifies what fragrance it might be.</p><button class="ai-card-btn">Decode →</button></div>
-
-    <div class="ai-card" onclick="openPanel('dupe')"><span class="ai-card-icon">⊜</span><h3 class="ai-card-title">Dupe Finder</h3><p class="ai-card-desc">Discover affordable clones of expensive designer fragrances.</p><button class="ai-card-btn">Find Dupes →</button></div>
-
   </div>
 </div>
 
