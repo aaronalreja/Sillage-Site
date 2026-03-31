@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SILLAGE — The Fragrance Collector's Companion</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@100;200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a96e;
+    --gold-light: #e8d5b0;
+    --gold-dark: #8a6e3e;
+    --ivory: #f5f0e8;
+    --obsidian: #0d0b09;
+    --dark: #1a1612;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Josefin Sans', sans-serif;
+    background: var(--obsidian);
+    color: var(--ivory);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 3rem;
+    background: linear-gradient(to bottom, rgba(13,11,9,0.95), transparent);
+    backdrop-filter: blur(2px);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .nav-logo span { font-style: italic; color: var(--gold-light); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--gold-light);
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    transition: opacity 0.3s, color 0.3s;
+    cursor: pointer;
+  }
+  .nav-links a:hover { opacity: 1; color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 30% 50%, #2a1f14 0%, var(--obsidian) 60%);
+  }
+  .hero-bg-text {
+    position: absolute;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22vw;
+    font-weight: 300;
+    color: rgba(201,169,110,0.04);
+    letter-spacing: -0.05em;
+    user-select: none;
+    white-space: nowrap;
+    animation: slowdrift 20s ease-in-out infinite alternate;
+  }
+  @keyframes slowdrift { from { transform: translateX(-3%); } to { transform: translateX(3%); } }
+  .hero-content { text-align: center; position: relative; z-index: 2; padding: 2rem; }
+  .hero-eyebrow {
+    font-size: 0.65rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 2rem;
+    opacity: 0; animation: fadeUp 1s ease 0.3s forwards;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.5rem, 8vw, 7rem);
+    font-weight: 300; line-height: 1.05; color: var(--ivory); margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 1s ease 0.5s forwards;
+  }
+  .hero-title em { font-style: italic; color: var(--gold); }
+  .hero-sub {
+    font-size: 0.7rem; letter-spacing: 0.2em; color: var(--gold-light);
+    max-width: 400px; margin: 0 auto 3rem; line-height: 2;
+    opacity: 0; animation: fadeUp 1s ease 0.7s forwards;
+  }
+  .hero-cta { display: inline-flex; gap: 1.5rem; opacity: 0; animation: fadeUp 1s ease 0.9s forwards; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* BUTTONS */
+  .btn-primary {
+    background: var(--gold); color: var(--obsidian); border: none;
+    padding: 1rem 2.5rem; font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(201,169,110,0.3); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent; color: var(--gold-light);
+    border: 1px solid rgba(201,169,110,0.4);
+    padding: 1rem 2.5rem; font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,169,110,0.05); }
+
+  /* SECTIONS */
+  .section { padding: 6rem 3rem; max-width: 1400px; margin: 0 auto; }
+  .section-label {
+    font-size: 0.6rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .section-label::before { content: ''; width: 40px; height: 1px; background: var(--gold); display: block; }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 300; color: var(--ivory); margin-bottom: 1rem;
+  }
+  .section-title em { font-style: italic; color: var(--gold); }
+  .divider {
+    border: none; height: 1px;
+    background: linear-gradient(to right, transparent, rgba(201,169,110,0.3), transparent);
+    margin: 0 3rem;
+  }
+
+  /* GRID */
+  .ai-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5px;
+    background: rgba(201,169,110,0.15);
+    border: 1px solid rgba(201,169,110,0.15);
+    margin-top: 3rem;
+  }
+  .ai-card {
+    background: var(--dark); padding: 2.5rem; cursor: pointer;
+    transition: background 0.3s; position: relative; overflow: hidden;
+  }
+  .ai-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at var(--mx,50%) var(--my,50%), rgba(201,169,110,0.08) 0%, transparent 60%);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .ai-card:hover { background: #1e1a14; }
+  .ai-card:hover::before { opacity: 1; }
+  .ai-card-icon { font-size: 1.8rem; margin-bottom: 1.2rem; display: block; }
+  .ai-card-title { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--gold-light); margin-bottom: 0.6rem; }
+  .ai-card-desc { font-size: 0.65rem; letter-spacing: 0.1em; line-height: 2; color: rgba(245,240,232,0.55); margin-bottom: 1.5rem; }
+  .ai-card-btn {
+    background: none; border: none; color: var(--gold);
+    font-family: 'Josefin Sans', sans-serif; font-size: 0.6rem;
+    letter-spacing: 0.3em; text-transform: uppercase; cursor: pointer;
+    display: flex; align-items: center; gap: 0.5rem; transition: gap 0.3s;
+  }
+  .ai-card-btn:hover { gap: 1rem; }
+
+  /* PANEL */
+  .panel-overlay {
+    position: fixed; inset: 0; background: rgba(13,11,9,0.85);
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s;
+    backdrop-filter: blur(8px);
+  }
+  .panel-overlay.active { opacity: 1; pointer-events: all; }
+  .panel {
+    background: var(--dark); border: 1px solid rgba(201,169,110,0.25);
+    width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto;
+    padding: 3rem; position: relative;
+    transform: translateY(20px); transition: transform 0.4s;
+    scrollbar-width: thin; scrollbar-color: var(--gold-dark) transparent;
+  }
+  .panel-overlay.active .panel { transform: translateY(0); }
+  .panel-close {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    background: none; border: 1px solid rgba(201,169,110,0.3);
+    color: var(--gold); width: 36px; height: 36px; cursor: pointer;
+    font-size: 1rem; display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .panel-close:hover { background: rgba(201,169,110,0.1); }
+  .panel-title { font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 300; color: var(--gold-light); margin-bottom: 0.5rem; }
+  .panel-sub { font-size: 0.6rem; letter-spacing: 0.2em; color: rgba(245,240,232,0.4); margin-bottom: 2rem; text-transform: uppercase; }
+
+  /* FORMS */
+  .form-group { margin-bottom: 1.5rem; }
+  .form-label { display: block; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.6rem; }
+  .form-input, .form-textarea, .form-select {
+    width: 100%; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,169,110,0.2); color: var(--ivory);
+    padding: 0.9rem 1.2rem; font-family: 'Josefin Sans', sans-serif;
+    font-size: 0.75rem; letter-spacing: 0.05em; outline: none; transition: border-color 0.3s;
+  }
+  .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--gold); background: rgba(201,169,110,0.04); }
+  .form-textarea { resize: vertical; min-height: 100px; }
+  .form-select option { background: var(--dark); }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+  .tag {
+    background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.3);
+    color: var(--gold-light); padding: 0.3rem 0.9rem; font-size: 0.6rem;
+    letter-spacing: 0.15em; cursor: pointer; transition: all 0.2s;
+    text-transform: uppercase; user-select: none;
+  }
+  .tag:hover, .tag.selected { background: rgba(201,169,110,0.2); border-color: var(--gold); color: var(--gold); }
+
+  /* AI RESPONSE */
+  .ai-response { margin-top: 2rem; padding: 1.8rem; background: rgba(201,169,110,0.05); border-left: 2px solid var(--gold); display: none; }
+  .ai-response.visible { display: block; }
+  .ai-response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+  .ai-response-label { font-size: 0.55rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 0.5rem; }
+  .ai-response-label .dot { animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .ai-response-controls { display: flex; gap: 0.5rem; }
+  .ctrl-btn {
+    background: none; border: 1px solid rgba(201,169,110,0.3); color: rgba(245,240,232,0.6);
+    font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.4rem 0.8rem; cursor: pointer; transition: all 0.3s; font-family: 'Josefin Sans', sans-serif;
+  }
+  .ctrl-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,169,110,0.08); }
+  .ctrl-btn.stop { border-color: rgba(196,122,90,0.4); color: rgba(196,122,90,0.7); }
+  .ctrl-btn.stop:hover { border-color: #c47a5a; color: #c47a5a; background: rgba(196,122,90,0.1); }
+  .ai-response-text { font-size: 0.8rem; line-height: 2; color: var(--ivory); white-space: pre-wrap; }
+  .ai-error { color: #c47a5a; font-size: 0.75rem; line-height: 1.8; }
+
+  .loading-dots { display: inline-flex; gap: 4px; align-items: center; }
+  .loading-dots span { width: 4px; height: 4px; background: var(--gold); border-radius: 50%; animation: dotpulse 1.2s infinite; }
+  .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotpulse { 0%,80%,100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+
+  /* ABOUT */
+  .about-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem; margin-top: 3rem; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid rgba(201,169,110,0.15); padding: 3rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; letter-spacing: 0.3em; color: var(--gold); }
+  .footer-copy { font-size: 0.6rem; letter-spacing: 0.1em; color: rgba(245,240,232,0.3); }
+
+  /* MODE BADGE */
+  .mode-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(201,169,110,0.08); border: 1px solid rgba(201,169,110,0.2);
+    color: rgba(245,240,232,0.5); font-size: 0.55rem; letter-spacing: 0.2em;
+    text-transform: uppercase; padding: 0.3rem 0.8rem; margin-bottom: 1.5rem;
+  }
+  .mode-badge .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); display: inline-block; }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .section { padding: 4rem 1.5rem; }
+    .ai-grid { grid-template-columns: 1fr; }
+    .panel { padding: 2rem 1.5rem; }
+    footer { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Sill<span>age</span></div>
+  <ul class="nav-links">
+    <li><a onclick="scrollToSection('features')">AI Features</a></li>
+    <li><a onclick="scrollToSection('about')">About</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg-text">SILLAGE</div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">The Fragrance Collector's Companion</p>
+    <h1 class="hero-title">Discover the<br><em>Art of Scent</em></h1>
+    <p class="hero-sub">AI-powered guidance for collectors, enthusiasts, and olfactory adventurers</p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="openPanel('recommend')">Find My Scent</button>
+      <button class="btn-ghost" onclick="scrollToSection('features')">Explore Features</button>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<div id="features" class="section">
+  <p class="section-label">Artificial Intelligence</p>
+  <h2 class="section-title">Nine <em>Intelligent</em> Tools</h2>
+  <p style="font-size:0.7rem;letter-spacing:0.1em;line-height:2;color:rgba(245,240,232,0.5);max-width:500px;margin-top:0.5rem">
+    Harness AI to deepen your olfactory journey — from personalized recommendations to detailed fragrance analysis.
+  </p>
+  <div class="ai-grid">
+    <div class="ai-card" onclick="openPanel('recommend')"><span class="ai-card-icon">✦</span><h3 class="ai-card-title">Scent Recommender</h3><p class="ai-card-desc">Describe your mood, memories, or preferences and receive bespoke fragrance recommendations curated by AI.</p><button class="ai-card-btn">Discover →</button></div>
+    <div class="ai-card" onclick="openPanel('analyze')"><span class="ai-card-icon">◈</span><h3 class="ai-card-title">Fragrance Analyzer</h3><p class="ai-card-desc">Input any perfume's notes and receive an in-depth breakdown of its olfactory profile, longevity, and occasions.</p><button class="ai-card-btn">Analyze →</button></div>
+    <div class="ai-card" onclick="openPanel('layer')"><span class="ai-card-icon">⬡</span><h3 class="ai-card-title">Layering Advisor</h3><p class="ai-card-desc">Learn which fragrances from your collection harmonize beautifully when layered together.</p><button class="ai-card-btn">Explore →</button></div>
+    <div class="ai-card" onclick="openPanel('notes')"><span class="ai-card-icon">◉</span><h3 class="ai-card-title">Notes Educator</h3><p class="ai-card-desc">Ask anything about fragrance ingredients — from rare oud to synthetic musks — and receive expert explanations.</p><button class="ai-card-btn">Learn →</button></div>
+    <div class="ai-card" onclick="openPanel('occasion')"><span class="ai-card-icon">◇</span><h3 class="ai-card-title">Occasion Matcher</h3><p class="ai-card-desc">Describe an upcoming event or season and discover the perfect fragrance to wear.</p><button class="ai-card-btn">Match →</button></div>
+    <div class="ai-card" onclick="openPanel('decode')"><span class="ai-card-icon">⟡</span><h3 class="ai-card-title">Scent Memory Decoder</h3><p class="ai-card-desc">Describe a smell from memory and AI identifies what fragrance it might be.</p><button class="ai-card-btn">Decode →</button></div>
+    <div class="ai-card" onclick="openPanel('poet')"><span class="ai-card-icon">✧</span><h3 class="ai-card-title">Fragrance Poet</h3><p class="ai-card-desc">Transform any perfume into poetic prose — perfect for reviews, journals, or gifting.</p><button class="ai-card-btn">Compose →</button></div>
+    <div class="ai-card" onclick="openPanel('dupe')"><span class="ai-card-icon">⊜</span><h3 class="ai-card-title">Dupe Finder</h3><p class="ai-card-desc">Discover affordable clones of expensive designer fragrances.</p><button class="ai-card-btn">Find Dupes →</button></div>
+    <div class="ai-card" onclick="openPanel('buyguide')"><span class="ai-card-icon">◎</span><h3 class="ai-card-title">Where to Buy</h3><p class="ai-card-desc">Enter your city and AI finds the best local boutiques, department stores, and online shops.</p><button class="ai-card-btn">Find Stores →</button></div>
+  </div>
+</div>
+
+<hr class="divider" id="about">
+
+<div class="section">
+  <p class="section-label">Experience</p>
+  <h2 class="section-title">The <em>Future</em> of Fragrance</h2>
+  <div class="about-grid">
+    <div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--gold-light);margin-bottom:1rem">Intelligent Recommendations</h3>
+      <p style="font-size:0.7rem;line-height:2;color:rgba(245,240,232,0.6);letter-spacing:0.05em">Our AI understands the nuances of fragrance composition, analyzing thousands of scent profiles to offer recommendations that match your unique preferences and occasions.</p>
+    </div>
+    <div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--gold-light);margin-bottom:1rem">Expert Knowledge</h3>
+      <p style="font-size:0.7rem;line-height:2;color:rgba(245,240,232,0.6);letter-spacing:0.05em">From rare oud varieties to synthetic molecules, our system draws from an extensive knowledge base to educate and inform your olfactory journey.</p>
+    </div>
+    <div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--gold-light);margin-bottom:1rem">Personal Curation</h3>
+      <p style="font-size:0.7rem;line-height:2;color:rgba(245,240,232,0.6);letter-spacing:0.05em">Whether you're building a collection or seeking that perfect scent memory, SILLAGE adapts to your individual taste profile and preferences.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">SILLAGE</div>
+  <p class="footer-copy">The Fragrance Collector's Companion · Crafted with passion for the art of scent</p>
+</footer>
+
+<!-- PANEL -->
+<div class="panel-overlay" id="panel-overlay" onclick="handleOverlayClick(event)">
+  <div class="panel" id="panel-content">
+    <button class="panel-close" onclick="closePanelBtn()">✕</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let isRunning = false;
+let cancelRequested = false;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AI ENGINE
+// Tries /api/chat first (live mode when deployed on Vercel with API key).
+// Falls back to local smart responses automatically.
+// ─────────────────────────────────────────────────────────────────────────────
+async function runAI(type) {
+  if (isRunning) return;
+
+  const responseDiv = document.getElementById(`ai-response-${type}`);
+  const textDiv     = document.getElementById(`ai-text-${type}`);
+  const stopBtn     = document.getElementById(`stop-${type}`);
+  const retryBtn    = document.getElementById(`retry-${type}`);
+  const runBtn      = document.getElementById(`run-${type}`);
+  if (!responseDiv || !textDiv) return;
+
+  isRunning = true;
+  cancelRequested = false;
+
+  responseDiv.classList.add('visible');
+  textDiv.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
+  if (stopBtn)  stopBtn.style.display  = 'inline-block';
+  if (retryBtn) retryBtn.style.display = 'none';
+  if (runBtn)   runBtn.disabled        = true;
+
+  const inputs = collectInputs(type);
+
+  try {
+    let responseText = '';
+
+    // ── Try live API first ──────────────────────────────────────────────────
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system:     SYSTEM_PROMPTS[type],
+          userPrompt: buildPrompt(type, inputs),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.text) {
+          responseText = data.text; // live AI response
+        }
+        // data.localMode === true means no API key yet — fall through to local
+      }
+    } catch (_) {
+      // Network error or running locally without Vercel — fall through
+    }
+
+    // ── Fall back to local smart responses ──────────────────────────────────
+    if (!responseText) {
+      responseText = generateLocalResponse(type, inputs);
+    }
+
+    // Typewriter reveal
+    textDiv.textContent = '';
+    await typewriter(textDiv, responseText);
+
+  } catch (err) {
+    textDiv.innerHTML = `<span class="ai-error">⚠ ${err.message || 'Something went wrong. Please try again.'}</span>`;
+  } finally {
+    isRunning = false;
+    cancelRequested = false;
+    if (stopBtn)  stopBtn.style.display  = 'none';
+    if (retryBtn) retryBtn.style.display = 'inline-block';
+    if (runBtn)   runBtn.disabled        = false;
+  }
+}
+
+function typewriter(el, text, speed = 8) {
+  return new Promise(resolve => {
+    let i = 0;
+    function next() {
+      if (cancelRequested || i >= text.length) { resolve(); return; }
+      el.textContent += text[i++];
+      setTimeout(next, speed);
+    }
+    next();
+  });
+}
+
+function stopAI() { cancelRequested = true; isRunning = false; }
+function retryAI(type) { runAI(type); }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SYSTEM PROMPTS (used in live mode)
+// ─────────────────────────────────────────────────────────────────────────────
+const SYSTEM_PROMPTS = {
+  recommend: `You are SILLAGE's expert AI fragrance consultant — a master perfumer with encyclopedic knowledge of fine fragrances. Give beautifully written, deeply personalized scent recommendations. Be specific with names, houses, notes, and why each suits the user's stated mood and occasion. Be warm, expert, and evocative.`,
+  analyze:   `You are SILLAGE's olfactory analysis engine. When given a fragrance and its notes, provide a rich analysis: olfactory architecture, how notes interact, performance expectations, ideal occasions, and comparable fragrances. Be technical yet poetic.`,
+  layer:     `You are SILLAGE's layering specialist. When given two fragrances, assess compatibility, describe the resulting olfactory profile, and give precise application instructions. Rate the pairing out of 10 and explain why it works.`,
+  notes:     `You are SILLAGE's ingredient educator. When asked about an ingredient, provide: origins, extraction method, olfactory character, cultural significance, sustainability notes, and at least 5 iconic fragrances that feature it prominently.`,
+  occasion:  `You are SILLAGE's occasion stylist. Analyze the occasion and recommend specific fragrances with clear reasoning. Consider projection, longevity, appropriateness, and season. If the user mentions their collection, prioritize those.`,
+  decode:    `You are SILLAGE's scent memory detective. Analyze the description clues and identify the most probable fragrances with confidence levels. Explain your reasoning and suggest how to verify.`,
+  poet:      `You are SILLAGE's fragrance writer — a poet and critic. Transform fragrance details into vivid, emotional writing. Match the requested style. Use synesthetic imagery and make the reader want to experience the fragrance.`,
+  dupe:      `You are SILLAGE's dupe expert. For any designer fragrance, identify the best clones across price points with honest similarity ratings. Be specific about what's replicated well vs where clones fall short. Include where to buy.`,
+  buyguide:  `You are SILLAGE's shopping concierge. For any city and country, provide specific store names and online retailers that ship to that region. Include local tips, duty-free options, and authenticity advice.`,
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PROMPT BUILDER (used in live mode)
+// ─────────────────────────────────────────────────────────────────────────────
+function buildPrompt(type, i) {
+  switch (type) {
+    case 'recommend': return `Recommend fragrances for me:\nMood: ${i.mood||'sophisticated and elegant'}\nFamilies: ${i.families?.join(', ')||'any'}\nOccasion: ${i.occasion||'everyday'}\nBudget: ${i.budget||'any'}\n\nRecommend 3–4 specific fragrances with house names, key notes, and why each fits.`;
+    case 'analyze':   return `Analyze this fragrance:\nName: ${i.name}\nTop: ${i.top}\nHeart: ${i.heart}\nBase: ${i.base}`;
+    case 'layer':     return `Analyze this layering combination:\nFragrance 1: ${i.f1}\nFragrance 2: ${i.f2}\nHow well do they layer? What does it smell like? How should I apply them?`;
+    case 'notes':     return `Give me a comprehensive education on this fragrance ingredient: ${i.ingredient}`;
+    case 'occasion':  return `Find the perfect fragrance for:\nOccasion: ${i.description}\nSeason: ${i.season?.join(', ')||'not specified'}\n${i.collection?`My Collection: ${i.collection}`:''}`;
+    case 'decode':    return `Help me identify a fragrance from this memory:\n${i.description}\nEra: ${i.era?.join(', ')||'unknown'}\nGender: ${i.gender?.join(', ')||'unknown'}`;
+    case 'poet':      return `Write an evocative ${i.style?.[0]||'poetic'} description of:\nName: ${i.name}\nNotes: ${i.notes}\n${i.memory?`Personal memory: ${i.memory}`:''}`;
+    case 'dupe':      return `Find the best dupes for: ${i.designer}\n${i.budget?.length?`Budget: ${i.budget.join(', ')}`:''}`;
+    case 'buyguide':  return `Guide to buying ${i.fragrance||'niche fragrances'} in ${i.city}, ${i.country}. Include specific stores, online retailers, and local tips.`;
+    default: return 'Help me explore fine fragrances.';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCAL SMART RESPONSES (used when no API key is set)
+// ─────────────────────────────────────────────────────────────────────────────
+const DB = {
+  woody:    ['Santal 33 by Le Labo','Terre d\'Hermès','Tom Ford Oud Wood','Creed Aventus','Byredo Gypsy Water'],
+  floral:   ['Chanel No. 5','Tom Ford Black Orchid','Jo Malone Peony & Blush Suede','Byredo Rose of No Man\'s Land','Maison Margiela Replica Flower Market'],
+  oriental: ['YSL Black Opium','Tom Ford Velvet Orchid','Thierry Mugler Alien','Maison Margiela Jazz Club','By Kilian Love Don\'t Be Shy'],
+  fresh:    ['Acqua di Gio by Armani','Light Blue by D&G','CK One','Hermès Un Jardin Sur Le Toit','Maison Margiela Sailing Day'],
+  gourmand: ['Thierry Mugler Angel','Viktor & Rolf Bonbon','Tom Ford Lost Cherry','Maison Margiela Coffee Break','By Kilian Good Girl Gone Bad'],
+  aromatic: ['Bleu de Chanel','Dior Sauvage','Acqua di Parma Colonia','Hermès Concentré d\'Orange Verte','L\'Occitane Lavender'],
+  chypre:   ['Chanel Coco Mademoiselle','Tom Ford Noir de Noir','Guerlain Mitsouko','Penhaligon\'s Iris Prima','Estée Lauder Private Collection'],
+  fougère:  ['Creed Green Irish Tweed','Houbigant Fougère Royale','Acqua di Parma Colonia Intensa','Penhaligon\'s Bayonet','L\'Artisan Parfumeur Thé Vert'],
+};
+
+const DUPES = {
+  'baccarat rouge 540': [
+    { name:'Lattafa Khamrah', price:'~$25', score:'8/10', note:'Captures the saffron-amber sweetness beautifully' },
+    { name:'Paris Corner Divain-558', price:'~$20', score:'9/10', note:'Remarkably close opening, slightly linear dry-down' },
+    { name:'Armaf Club de Nuit Untold', price:'~$30', score:'7/10', note:'Amber and floral aspects well replicated' },
+    { name:'Al Haramain Amber Oud Rouge', price:'~$35', score:'8/10', note:'Slightly heavier on oud, excellent longevity' },
+    { name:'Pendora Scents Precious Ruby', price:'~$28', score:'7/10', note:'Sweeter interpretation with prominent vanilla' },
+  ],
+  'creed aventus': [
+    { name:'Armaf Club de Nuit Intense', price:'~$30', score:'8/10', note:'Excellent pineapple and birch replication' },
+    { name:'Montblanc Explorer', price:'~$45', score:'7/10', note:'Similar DNA with a unique woody twist' },
+    { name:'Al Haramain L\'Aventure', price:'~$25', score:'8/10', note:'Closer to older Aventus batches' },
+    { name:'Lattafa Asad', price:'~$20', score:'7/10', note:'Great budget entry point' },
+    { name:'Paris Corner Emir The King', price:'~$22', score:'8/10', note:'Impressive longevity and projection' },
+  ],
+};
+
+function generateLocalResponse(type, i) {
+  switch (type) {
+
+    case 'recommend': {
+      const mood = i.mood || 'sophisticated and elegant';
+      const families = i.families?.length ? i.families : ['Woody', 'Floral'];
+      const occasion = i.occasion || 'everyday';
+      const budget = i.budget || 'any';
+      const picks = [];
+      families.forEach(f => {
+        const list = DB[f.toLowerCase()] || DB.woody;
+        picks.push(...list.slice(0, 2));
+      });
+      const top3 = [...new Set(picks)].slice(0, 3);
+      return `Personalized Recommendations for "${mood}"
+
+Based on your preference for ${families.join(' and ')} fragrances for ${occasion} wear${budget !== 'any' ? ` within the ${budget} range` : ''}, here are my curated selections:
+
+${top3[0] || 'Santal 33 by Le Labo'}
+A modern icon that perfectly captures ${mood.toLowerCase()} energy. Creamy sandalwood anchored by violet, cardamom, and papyrus — it creates a warm, enveloping presence ideal for ${occasion} wear. Moderate-to-strong projection, exceptional longevity.
+
+${top3[1] || 'Tom Ford Oud Wood'}
+For those who want depth and refinement. The oud provides richness while rosewood and cardamom keep it wearable. A conversation-starting fragrance that rewards anyone who leans in close.
+
+${top3[2] || 'Byredo Gypsy Water'}
+The lighter, more adventurous option. Bergamot, incense, and pine create a bohemian-chic signature that still reads as polished. Perfect when you want to feel effortlessly sophisticated.
+
+Where to Experience:
+Visit Sephora, Harvey Nichols, or a specialty niche boutique to test these in person. Discovery sets are an excellent investment before committing to a full bottle.
+
+Tip: Always test on skin — fragrance evolves uniquely with your body chemistry. What smells extraordinary on paper may be even better on you.`;
+    }
+
+    case 'analyze': {
+      const name = i.name || 'this fragrance';
+      return `In-Depth Analysis: ${name}
+
+Olfactory Architecture:
+${name} is built as a classic pyramid — top, heart, and base notes each playing a distinct role as the fragrance evolves on skin.
+
+Opening (Top Notes: ${i.top || 'citrus and spice'}):
+The opening is your first impression — bright, immediate, and intentional. These volatile molecules make their statement within the first 10–15 minutes before giving way to the heart.
+
+Development (Heart Notes: ${i.heart || 'floral and woody'}):
+This is the soul of the fragrance — the truest expression of its character. The heart reveals itself over the first hour and remains the dominant presence for several hours of wear.
+
+Foundation (Base Notes: ${i.base || 'musk and wood'}):
+The base anchors everything. These long-chain molecules bind to skin and provide longevity. They're what lingers hours after the top notes have gone.
+
+Performance Profile:
+• Longevity: 7–10 hours (estimated from note structure)
+• Sillage: Moderate — noticeable without overwhelming
+• Seasonality: Versatile, slightly better in cooler months
+• Best worn: Evening and special occasions
+
+Similar Fragrances to Explore:
+If you enjoy this profile, also consider: Tom Ford Noir de Noir, Byredo Black Saffron, Maison Margiela By the Fireplace.`;
+    }
+
+    case 'layer': {
+      const f1 = i.f1 || 'Fragrance One';
+      const f2 = i.f2 || 'Fragrance Two';
+      return `Layering Analysis: ${f1} + ${f2}
+
+Compatibility Assessment: 7.5/10 — Strong Harmony
+
+These two fragrances occupy complementary olfactory territory. Rather than competing, they create a dialogue — one provides the foundation, the other adds dimension and character.
+
+Resulting Olfactory Profile:
+The layered result reads as warmer and more complex than either worn alone. Expect enhanced depth in the base and a more nuanced heart development. The combination will feel signature and uniquely yours.
+
+Recommended Application Method:
+1. Apply ${f1} first — to pulse points: wrists, neck, inner elbow
+2. Wait 10–15 minutes for it to settle and bloom
+3. Apply ${f2} more sparingly — ideally to clothing or chest
+4. Allow 5 minutes for the marriage to happen before stepping out
+
+Character of the Combination:
+Confident. Artful. Memorable. This layering creates an intimate sillage that rewards closeness — it won't project aggressively, but anyone near you will notice something extraordinary.
+
+Seasonal Tip:
+In warmer months, favour ${f1} more heavily. In cooler weather, let ${f2} dominate. Adjust ratios until you find your signature balance.`;
+    }
+
+    case 'notes': {
+      const ing = i.ingredient || 'oud';
+      const profiles = {
+        oud: { origin:'Aquilaria trees in Southeast Asia, India, and the Middle East', profile:'Complex, animalic, medicinal, sweet, woody, smoky', extraction:'Steam distillation of resin-infected heartwood — the wood must be infected by a specific mould to produce the precious resin', cultural:'Revered across the Middle East as "liquid gold" — burned as incense for centuries at religious ceremonies, weddings, and royal courts', famous:'Tom Ford Oud Wood, Creed Royal Oud, By Kilian Sacred Wood, Parfums de Marly Layton, Maison Francis Kurkdjian Oud Satin Mood' },
+        rose: { origin:'Bulgaria (Rosa damascena), Turkey, Morocco, and Grasse, France', profile:'Floral, romantic, honeyed, sometimes spicy, powdery, or fruity depending on variety', extraction:'Steam distillation or solvent extraction — it takes approximately 4 tonnes of petals to produce 1kg of rose absolute', cultural:'The universal symbol of love across cultures — from ancient Persia to Renaissance Europe to modern perfumery, rose has always been the queen of flowers', famous:'Chanel No. 5, Tom Ford Noir de Noir, Byredo Rose of No Man\'s Land, Dior Miss Dior, Frederic Malle Une Rose' },
+        sandalwood: { origin:'Mysore, India (Santalum album) and Australia (Santalum spicatum)', profile:'Creamy, smooth, milky, softly woody, slightly sweet, and skin-like', extraction:'Steam distillation of the heartwood — trees must be at least 15 years old before harvesting', cultural:'Sacred in Hindu and Buddhist traditions — burned as incense in temples for thousands of years', famous:'Le Labo Santal 33, Diptyque Tam Dao, Creed Sandalwood, Tom Ford Santal Blush, Chanel Bois des Îles' },
+        vetiver: { origin:'Haiti, Java, Réunion — a grass whose roots carry the fragrance', profile:'Smoky, earthy, woody, slightly citrusy on opening, with a cool, almost aquatic depth', extraction:'Steam distillation of the roots — the terroir dramatically affects the final scent profile', cultural:'Known as the "Oil of Tranquility" in India and Sri Lanka — used traditionally in Ayurvedic medicine', famous:'Guerlain Vétiver, Tom Ford Grey Vetiver, Chanel Sycomore, Dior Fahrenheit, Annick Goutal Vétiver' },
+        iris: { origin:'Florence, Italy and Morocco — specifically the dried rhizome (root), not the flower', profile:'Powdery, carroty, violet-like, cold, lipstick-adjacent, with extraordinary elegance and softness', extraction:'The rhizomes are dried for 3–5 years, then steam distilled — the most expensive natural raw material in perfumery', cultural:'The fleur-de-lis of French royalty, iris represents wisdom and nobility — it\'s the defining note of Florentine perfumery', famous:'Prada Infusion d\'Iris, Dior Homme, Chanel No. 19, Creed Fleurs de Bulgarie, Serge Lutens Iris Silver Mist' },
+        ambergris: { origin:'Produced in the digestive tract of sperm whales — found floating at sea or washed ashore', profile:'Oceanic, warm, animalic, slightly sweet and earthy, with an extraordinary tenacity and radiance', extraction:'Dissolved in alcohol — genuine ambergris is extraordinarily rare; most modern perfumes use synthetic ambroxide or ambrette', cultural:'Once worth more than gold — used in royal courts as a fixative and aphrodisiac for centuries', famous:'Amouage Gold, Creed Millésime Impérial, Chanel No. 5, Dior Eau Sauvage, Givenchy L\'Interdit' },
+      };
+      const p = profiles[ing.toLowerCase()] || {
+        origin: 'Various global sources depending on variety and production method',
+        profile: 'Complex and multifaceted — one of perfumery\'s most versatile building blocks',
+        extraction: 'Various methods including steam distillation, solvent extraction, and enfleurage',
+        cultural: 'A cornerstone of fragrance traditions across multiple cultures and centuries',
+        famous: 'Featured prominently in dozens of iconic fragrances across all major houses',
+      };
+      return `Comprehensive Profile: ${ing.charAt(0).toUpperCase()+ing.slice(1)}
+
+Origins & Sourcing:
+${p.origin}. Quality varies significantly by geographic origin, harvest season, and processing technique — the finest examples command extraordinary prices.
+
+Olfactory Character:
+${p.profile}. This ingredient reveals itself differently across the fragrance pyramid — often behaving one way in the top notes and transforming beautifully as it dries down.
+
+Extraction & Production:
+${p.extraction}. This labour-intensive process is a significant factor in the final cost of fragrances that use natural ${ing}.
+
+Cultural & Historical Significance:
+${p.cultural}. Its role in perfumery has evolved from purely functional to deeply symbolic — it carries meaning beyond scent.
+
+Famous Fragrances Featuring ${ing.charAt(0).toUpperCase()+ing.slice(1)}:
+${p.famous}.
+
+In Modern Perfumery:
+Today's perfumers use both natural and synthetic versions of ${ing}. Synthetics allow consistency, affordability, and — in some cases — ethical sourcing. They are not inferior; many modern aroma chemicals capture specific facets of the natural material with extraordinary precision.`;
+    }
+
+    case 'occasion': {
+      const desc = i.description || 'an elegant evening out';
+      const season = i.season?.join(', ') || 'any season';
+      return `Perfect Fragrance for: "${desc}"
+
+Situation Analysis:
+For ${desc} during ${season}, the ideal fragrance should be memorable without being overpowering — a scent that completes your presence rather than announces it.
+
+Primary Recommendation: Hermès Terre d'Hermès
+An architectural masterpiece of modern perfumery. The citrus opening is brilliant and refined; the pepper and mineral notes add intrigue; the cedar and vetiver base ensures sophisticated longevity. It evolves beautifully over an evening without demanding attention.
+
+Alternative: Dior Homme Intense
+The iris and amber combination strikes a perfect balance between masculine refinement and approachable warmth. Excellent projection for the first two hours, settling into an intimate, close-to-skin presence.
+
+Also Consider: Maison Margiela By the Fireplace
+If the occasion has a cosy or intimate dimension — warm vanilla, chestnut, and smoked wood create an irresistibly inviting presence.
+
+Application Strategy:
+• Apply 20 minutes before departure — not right before
+• One spray on the chest, one on the wrist (not both wrists)
+• Your goal: fragrance aura, not projection
+• Avoid over-applying in enclosed spaces like restaurants
+
+${i.collection ? `From Your Collection:\nWith ${i.collection} available, I'd suggest leaning toward your lighter, more refined pieces for this occasion. Reserve the bolder fragrances for more informal settings.` : ''}`;
+    }
+
+    case 'decode': {
+      const desc = i.description || 'a powdery, rosy scent';
+      const era = i.era?.join(', ') || 'uncertain era';
+      const gender = i.gender?.join(', ') || 'uncertain';
+      return `Scent Memory Analysis
+
+Your Description: "${desc}"
+Era: ${era} | Gender Target: ${gender}
+
+Most Probable Match: Estée Lauder White Linen (1978)
+The aldehydic "sharpness" you describe is classic White Linen. Its clean, powdery rose signature dominated the 1980s and was a staple of elegant women everywhere. The warmth underneath is light musk and subtle wood. Confidence: High.
+
+Strong Alternative: Chanel No. 5
+The definitive aldehydic floral — sharp, powdery, rosy, with a warm, embracing base. If the fragrance felt iconic and grand, this is likely your match. Its enduring popularity across decades makes it a common memory trigger.
+
+Also Consider: Arpège by Lanvin
+A classic from 1927 that was worn well into the 1980s. Powdery, rose-forward, with honeysuckle and a distinctive warm dry-down. Slightly softer than the above two but equally elegant.
+
+How to Verify:
+Visit a well-stocked department store — Nordstrom, Harvey Nichols, or a duty-free — and ask to smell these three. Scent memory is remarkably accurate; you'll likely recognise it immediately. Many retailers also offer individual samples for a small fee.
+
+The Olfactory Science:
+The "sharp" quality you remember is almost certainly aldehydes — synthetic molecules that create a distinctive clean, soapy lift. Combined with rose and powdery iris (orris root), they formed the signature aesthetic of luxury feminine fragrances from that era.`;
+    }
+
+    case 'poet': {
+      const name = i.name || 'this fragrance';
+      const style = i.style?.[0] || 'Poetic & Lyrical';
+      const notes = i.notes || 'a complex blend';
+      const styleDesc = { 'Poetic & Lyrical':'lyrical', 'Sensory & Vivid':'vivid', 'Technical & Expert':'precise', 'Romantic':'romantic', 'Minimalist':'spare', 'Nostalgic':'wistful' }[style] || 'evocative';
+      return `${name}: An Olfactory Portrait
+
+In the ${styleDesc} tradition —
+
+${name} does not arrive. It appears — the way a memory surfaces before you've consciously summoned it.
+
+The opening is ${notes.split(',')[0]?.trim() || 'brightness itself'}: not a citrus note but the idea of sunlight caught in glass, a moment of clarity before the world becomes complicated again. It lasts long enough to make a promise, and then it delivers.
+
+What follows is the fragrance's true self — warmer, deeper, more confessional. This is the version of ${name} that stays with you through dinner, through conversation, through the moment someone asks what you're wearing and you struggle to explain it without sounding like a poet.
+
+${i.memory ? `There is something in this fragrance of ${i.memory} — a quality of time suspended, of being somewhere specific and feeling, for a moment, entirely at home.` : 'There is something universal in its particularity — the way great perfume always feels both completely unfamiliar and like something you\'ve always known.'}
+
+The dry-down is the truest intimacy. What remains on your skin hours later — ${notes.split(',').slice(-1)[0]?.trim() || 'warm musk and memory'} — belongs to you now. It has become your signature rather than someone else's creation.
+
+Wear it for the moments worth remembering.`;
+    }
+
+    case 'dupe': {
+      const designer = i.designer || 'this fragrance';
+      const key = designer.toLowerCase().trim();
+      const found = DUPES[key];
+      const list = found || [
+        { name:'Lattafa Khamrah', price:'~$25', score:'7/10', note:'A rich amber-oriental that echoes the warmth of many designer originals' },
+        { name:'Armaf Club de Nuit Intense Man', price:'~$30', score:'8/10', note:'One of the most acclaimed designer-adjacent fragrances on the market' },
+        { name:'Al Haramain Amber Oud', price:'~$35', score:'7/10', note:'Rich, long-lasting, and luxurious for the price' },
+        { name:'Paris Corner Emir Intense', price:'~$22', score:'7/10', note:'Impressive projection and staying power' },
+        { name:'Pendora Scents Blue Unisex', price:'~$20', score:'6/10', note:'A solid entry-level clone with good performance' },
+      ];
+      return `Top Dupes for ${designer}
+
+${list.map((d, idx) => `${idx+1}. ${d.name} — ${d.price}
+   Similarity: ${d.score}
+   ${d.note}`).join('\n\n')}
+
+Honest Assessment:
+${found ? `These clones do an impressive job capturing ${designer}'s signature profile.` : `Without a specific database entry for ${designer}, these recommendations are based on general olfactory families that tend to intersect well.`} None will perfectly replicate the original's seamless blending and premium ingredient quality — but at a fraction of the price, they offer remarkable value.
+
+Where to Buy:
+• FragranceX.com — competitive prices, authenticity guaranteed
+• Notino.co.uk / Notino.in — fast shipping, excellent service  
+• Amazon (sold by brand) — convenient but verify the seller
+• Local Middle Eastern fragrance shops — often carry authentic stock at good prices
+
+Pro Tips:
+• Always order a sample before committing to a full bottle
+• Read recent reviews — formulations occasionally change
+• Test on skin, not paper — body chemistry transforms every fragrance`;
+    }
+
+    case 'buyguide': {
+      const city = i.city || 'your city';
+      const country = i.country || 'your country';
+      const fragrance = i.fragrance || 'niche fragrances';
+      const isMumbai = city.toLowerCase().includes('mumbai') || city.toLowerCase().includes('bombay');
+      const isHK = city.toLowerCase().includes('hong kong');
+      const isSingapore = city.toLowerCase().includes('singapore');
+
+      let localTips = '';
+      if (isMumbai) {
+        localTips = `Mumbai-Specific:
+• Scentido (Bandra West) — one of India's best niche boutiques, carrying Creed, Byredo, Diptyque, and more
+• Bogart's (multiple locations) — good designer range, knowledgeable staff
+• Faces Canada (malls) — decent entry-level niche section
+• Duty Free at CSIA (T2) — often the best prices on major designer houses
+• Perfume Paradise (Crawford Market area) — for attars and traditional Indian fragrance culture
+• Instagram-based importers — many reputable sellers bring in niche brands not officially available in India`;
+      } else if (isHK) {
+        localTips = `Hong Kong-Specific:
+• Lane Crawford (IFC Mall, Times Square) — the definitive luxury fragrance destination in HK
+• Harvey Nichols (Pacific Place) — excellent niche selection, very knowledgeable staff
+• SOGO (Causeway Bay) — good range of mid-to-luxury designers
+• Duty Free at HKIA — strong on major houses, worth checking before departure
+• Harbour City (TST) — multiple boutiques including dedicated niche retailers
+• 香港香水 independent boutiques in Sheung Wan and Sai Ying Pun — emerging niche culture`;
+      } else if (isSingapore) {
+        localTips = `Singapore-Specific:
+• Tangs (Orchard Road) — excellent fragrance floor with wide niche selection
+• Isetan (Wisma Atria) — strong Japanese and European niche brands
+• Sephora (multiple Ion Orchard, Marina Bay Sands) — widest accessible range
+• Escentials (Paragon, Raffles City) — Singapore's premier niche boutique, carrying Frederic Malle, Byredo, Le Labo
+• Duty Free at Changi Airport (Terminals 1–4) — legendary for pricing and selection`;
+      } else {
+        localTips = `Local Tips for ${city}:
+• Start with department stores — they offer the widest testing range and knowledgeable staff
+• Look for dedicated niche boutiques near fashion or luxury districts  
+• Airport duty-free is often significantly cheaper for major designer houses
+• Ask staff about discovery sets — many niche brands offer sampler collections
+• Local perfumers and attarwallas often carry unique regional scents worth exploring`;
+      }
+
+      return `Fragrance Shopping Guide: ${city}, ${country}
+
+Looking for: ${fragrance}
+
+In-Store Options:
+${localTips}
+
+Best Online Retailers Shipping to ${country}:
+• Notino.in / Notino.co.uk — fast delivery, authentic stock, competitive pricing
+• FragranceX.com — 30–40% below retail, ships internationally
+• Beautybay.com — good niche range, reliable shipping
+• Direct from brand websites — most niche houses ship globally
+• Luckyscent.com — the best English-language niche retailer; ships worldwide
+
+Authenticity Tips:
+• Buy from authorised retailers only — the niche fragrance market has few fakes, but designer market is more vulnerable
+• Use CheckFresh.com to verify batch codes on any purchase
+• If a price seems too good to be true on a niche bottle, it probably is
+• Trusted Instagram sellers often have verifiable track records — check reviews carefully
+
+Getting the Most from Your Visit:
+• Shop on weekday mornings — better staff attention and fresher palate
+• Test maximum 3–4 fragrances per session — your nose fatigues quickly
+• Smell your own skin, not the paper strip — the paper tells you nothing
+• Ask for a sample to live with for a few days before committing`;
+    }
+
+    default:
+      return 'Welcome to SILLAGE. Please select a tool to explore the world of fine fragrance.';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INPUT COLLECTOR
+// ─────────────────────────────────────────────────────────────────────────────
+function collectInputs(type) {
+  const get   = id => document.getElementById(id)?.value || '';
+  const tags  = id => [...document.querySelectorAll(`#${id} .tag.selected`)].map(t => t.textContent.trim());
+  switch (type) {
+    case 'recommend': return { mood: get('rec-mood'), families: tags('rec-families'), occasion: get('rec-occasion'), budget: tags('rec-budget')[0] };
+    case 'analyze':   return { name: get('an-name'), top: get('an-top'), heart: get('an-heart'), base: get('an-base') };
+    case 'layer':     return { f1: get('lay-1'), f2: get('lay-2') };
+    case 'notes':     return { ingredient: get('notes-ing') };
+    case 'occasion':  return { description: get('occ-desc'), season: tags('occ-season'), collection: get('occ-col') };
+    case 'decode':    return { description: get('dec-desc'), era: tags('dec-era'), gender: tags('dec-gender') };
+    case 'poet':      return { name: get('poet-name'), style: tags('poet-style'), notes: get('poet-notes'), memory: get('poet-mem') };
+    case 'dupe':      return { designer: get('dupe-name'), budget: tags('dupe-budget') };
+    case 'buyguide':  return { city: get('buy-city'), country: get('buy-country'), fragrance: get('buy-frag') };
+    default: return {};
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAG TOGGLE
+// ─────────────────────────────────────────────────────────────────────────────
+function toggleTag(el, group, single = false) {
+  if (single) document.querySelectorAll(`#${group} .tag`).forEach(t => { if (t !== el) t.classList.remove('selected'); });
+  el.classList.toggle('selected');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESPONSE TEMPLATE
+// ─────────────────────────────────────────────────────────────────────────────
+function responseBlock(type, label) {
+  return `
+    <div class="ai-response" id="ai-response-${type}">
+      <div class="ai-response-header">
+        <div class="ai-response-label"><span class="dot">✦</span> ${label}</div>
+        <div class="ai-response-controls">
+          <button class="ctrl-btn stop" id="stop-${type}" onclick="stopAI()" style="display:none">Stop</button>
+          <button class="ctrl-btn" id="retry-${type}" onclick="retryAI('${type}')" style="display:none">Retry</button>
+        </div>
+      </div>
+      <div class="ai-response-text" id="ai-text-${type}"></div>
+    </div>`;
+}
+
+function runBtn(type, label) {
+  return `<button class="btn-primary" id="run-${type}" onclick="runAI('${type}')">${label}</button>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PANELS
+// ─────────────────────────────────────────────────────────────────────────────
+const PANELS = {
+
+  recommend: {
+    title:'Scent Recommender', sub:'AI-Powered Personalization',
+    html: () => `
+      <div class="form-group"><label class="form-label">Describe your mood or preference</label>
+        <textarea class="form-textarea" id="rec-mood">sophisticated and elegant for important occasions</textarea></div>
+      <div class="form-group"><label class="form-label">Preferred Families</label>
+        <div class="tag-row" id="rec-families">
+          ${['Woody','Floral','Oriental','Fresh','Gourmand','Aromatic','Chypre','Fougère'].map(f=>`<span class="tag" onclick="toggleTag(this,'rec-families')">${f}</span>`).join('')}
+        </div></div>
+      <div class="form-group"><label class="form-label">Occasion</label>
+        <select class="form-select" id="rec-occasion">
+          <option value="everyday">Everyday</option><option value="evening">Evening / Date Night</option>
+          <option value="office">Office</option><option value="special">Special Occasion</option>
+          <option value="summer">Summer</option><option value="winter">Winter</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Budget</label>
+        <div class="tag-row" id="rec-budget">
+          ${['Under $50','$50–$150','$150–$300','$300+','No limit'].map(b=>`<span class="tag" onclick="toggleTag(this,'rec-budget',true)">${b}</span>`).join('')}
+        </div></div>
+      ${runBtn('recommend','Generate Recommendations')}
+      ${responseBlock('recommend','AI Recommendation')}`,
+  },
+
+  analyze: {
+    title:'Fragrance Analyzer', sub:'Deep Olfactory Profile',
+    html: () => `
+      <div class="form-group"><label class="form-label">Fragrance Name & House</label><input class="form-input" id="an-name" value="Tom Ford Black Orchid"></div>
+      <div class="form-group"><label class="form-label">Top Notes</label><input class="form-input" id="an-top" value="black truffle, bergamot, black currant"></div>
+      <div class="form-group"><label class="form-label">Heart Notes</label><input class="form-input" id="an-heart" value="black orchid, ylang-ylang, lotus wood"></div>
+      <div class="form-group"><label class="form-label">Base Notes</label><input class="form-input" id="an-base" value="patchouli, vanilla, incense, sandalwood"></div>
+      ${runBtn('analyze','Analyze Fragrance')}
+      ${responseBlock('analyze','AI Analysis')}`,
+  },
+
+  layer: {
+    title:'Layering Advisor', sub:'Harmonious Combinations',
+    html: () => `
+      <p style="font-size:0.7rem;color:rgba(245,240,232,0.5);line-height:2;margin-bottom:1.5rem">Enter two fragrances and discover if they layer harmoniously.</p>
+      <div class="form-group"><label class="form-label">First Fragrance</label><input class="form-input" id="lay-1" value="Santal 33 by Le Labo"></div>
+      <div class="form-group"><label class="form-label">Second Fragrance</label><input class="form-input" id="lay-2" value="Neroli Portofino by Tom Ford"></div>
+      ${runBtn('layer','Get Layering Advice')}
+      ${responseBlock('layer','Layering Guide')}`,
+  },
+
+  notes: {
+    title:'Notes Educator', sub:'Ingredient Deep Dives',
+    html: () => `
+      <div class="form-group"><label class="form-label">Ingredient or Note</label><input class="form-input" id="notes-ing" value="oud"></div>
+      <div class="form-group"><label class="form-label">Popular Ingredients</label>
+        <div class="tag-row">
+          ${['Oud','Rose','Sandalwood','Ambergris','Vetiver','Iris','Benzoin','Hedione'].map(n=>`<span class="tag" onclick="document.getElementById('notes-ing').value='${n}';this.closest('.tag-row').querySelectorAll('.tag').forEach(t=>t.classList.remove('selected'));this.classList.add('selected')">${n}</span>`).join('')}
+        </div></div>
+      ${runBtn('notes','Educate Me')}
+      ${responseBlock('notes','Ingredient Profile')}`,
+  },
+
+  occasion: {
+    title:'Occasion Matcher', sub:'Right Scent for Every Moment',
+    html: () => `
+      <div class="form-group"><label class="form-label">Describe the Occasion</label>
+        <textarea class="form-textarea" id="occ-desc">A candlelit dinner at a fine restaurant in December. Memorable but not overpowering.</textarea></div>
+      <div class="form-group"><label class="form-label">Season</label>
+        <div class="tag-row" id="occ-season">
+          ${['Spring','Summer','Autumn','Winter'].map(s=>`<span class="tag" onclick="toggleTag(this,'occ-season',true)">${s}</span>`).join('')}
+        </div></div>
+      <div class="form-group"><label class="form-label">My Collection (optional)</label>
+        <input class="form-input" id="occ-col" placeholder="e.g. Santal 33, Aventus, Black Orchid…"></div>
+      ${runBtn('occasion','Find My Occasion Scent')}
+      ${responseBlock('occasion','Occasion Match')}`,
+  },
+
+  decode: {
+    title:'Scent Memory Decoder', sub:'Identify Fragrances from Memory',
+    html: () => `
+      <div class="form-group"><label class="form-label">Describe the Scent Memory</label>
+        <textarea class="form-textarea" id="dec-desc" style="min-height:130px">My grandmother wore it in the 1980s. Powdery roses, something sharp like talcum powder, warm and smoky underneath. Lingered for hours.</textarea></div>
+      <div class="form-group"><label class="form-label">Era</label>
+        <div class="tag-row" id="dec-era">
+          ${['Pre-1970s','1970s','1980s','1990s','2000s','2010s+','Unknown'].map(e=>`<span class="tag" onclick="toggleTag(this,'dec-era',true)">${e}</span>`).join('')}
+        </div></div>
+      <div class="form-group"><label class="form-label">Gender Target</label>
+        <div class="tag-row" id="dec-gender">
+          ${['Feminine','Masculine','Unisex','Unknown'].map(g=>`<span class="tag" onclick="toggleTag(this,'dec-gender',true)">${g}</span>`).join('')}
+        </div></div>
+      ${runBtn('decode','Decode This Memory')}
+      ${responseBlock('decode','Memory Analysis')}`,
+  },
+
+  poet: {
+    title:'Fragrance Poet', sub:'Evocative Descriptions & Reviews',
+    html: () => `
+      <div class="form-group"><label class="form-label">Fragrance Name & House</label><input class="form-input" id="poet-name" value="Midnight in Paris by Van Cleef & Arpels"></div>
+      <div class="form-group"><label class="form-label">Style of Writing</label>
+        <div class="tag-row" id="poet-style">
+          ${['Poetic & Lyrical','Sensory & Vivid','Technical & Expert','Romantic','Minimalist','Nostalgic'].map(s=>`<span class="tag" onclick="toggleTag(this,'poet-style',true)">${s}</span>`).join('')}
+        </div></div>
+      <div class="form-group"><label class="form-label">Key Notes (optional)</label><input class="form-input" id="poet-notes" value="lavender, tonka bean, bergamot, sandalwood"></div>
+      <div class="form-group"><label class="form-label">Personal Memory (optional)</label>
+        <textarea class="form-textarea" id="poet-mem" style="min-height:70px" placeholder="e.g. I wore this on my wedding day in Florence…"></textarea></div>
+      ${runBtn('poet','Compose Description')}
+      ${responseBlock('poet','Poetic Description')}`,
+  },
+
+  dupe: {
+    title:'Dupe Finder', sub:'Clones & Designer Inspirations',
+    html: () => `
+      <p style="font-size:0.7rem;color:rgba(245,240,232,0.5);line-height:2;margin-bottom:1.5rem">Find affordable clones of luxury fragrances.</p>
+      <div class="form-group"><label class="form-label">Designer Fragrance</label><input class="form-input" id="dupe-name" value="Baccarat Rouge 540"></div>
+      <div class="form-group"><label class="form-label">Budget for Clone</label>
+        <div class="tag-row" id="dupe-budget">
+          ${['Under $20','$20–$50','$50–$100','Any Budget'].map(b=>`<span class="tag" onclick="toggleTag(this,'dupe-budget',true)">${b}</span>`).join('')}
+        </div></div>
+      ${runBtn('dupe','Find Dupes ⊜')}
+      ${responseBlock('dupe','Dupe Analysis')}`,
+  },
+
+  buyguide: {
+    title:'Where to Buy', sub:'Local & Online Retailers',
+    html: () => `
+      <p style="font-size:0.7rem;color:rgba(245,240,232,0.5);line-height:2;margin-bottom:1.5rem">Tell us where you are — we'll find the best places to buy.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+        <div><label class="form-label">City</label><input class="form-input" id="buy-city" value="Mumbai"></div>
+        <div><label class="form-label">Country</label><input class="form-input" id="buy-country" value="India"></div>
+      </div>
+      <div class="form-group"><label class="form-label">What You Want to Buy</label><input class="form-input" id="buy-frag" value="niche fragrances"></div>
+      ${runBtn('buyguide','Find Best Places ◎')}
+      ${responseBlock('buyguide','Shopping Guide')}`,
+  },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PANEL OPEN / CLOSE
+// ─────────────────────────────────────────────────────────────────────────────
+function openPanel(id) {
+  const p = PANELS[id]; if (!p) return;
+  isRunning = false; cancelRequested = true;
+  document.getElementById('panel-content').innerHTML = `
+    <button class="panel-close" onclick="closePanelBtn()">✕</button>
+    <p class="panel-sub">${p.sub}</p>
+    <h2 class="panel-title">${p.title}</h2>
+    ${p.html()}`;
+  document.getElementById('panel-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('panel-overlay')) closePanelBtn();
+}
+
+function closePanelBtn() {
+  document.getElementById('panel-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+  cancelRequested = true; isRunning = false;
+}
+
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// Mouse shimmer on cards
+document.querySelectorAll('.ai-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty('--mx', ((e.clientX-r.left)/r.width*100)+'%');
+    card.style.setProperty('--my', ((e.clientY-r.top)/r.height*100)+'%');
+  });
+});
+</script>
+</body>
+</html>
