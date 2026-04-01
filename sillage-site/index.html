@@ -458,7 +458,7 @@ function retryAI(type) { runAI(type); }
 // ─────────────────────────────────────────────────────────────────────────────
 const SYSTEM_PROMPTS = {
   recommend: `You are SILLAGE's expert AI fragrance consultant — a master perfumer with encyclopedic knowledge of fine fragrances. Give beautifully written, deeply personalized scent recommendations. Be specific with names, houses, notes, and why each suits the user's stated mood and occasion. Be warm, expert, and evocative.`,
-  analyze:   `You are SILLAGE's olfactory analysis engine. When given a fragrance and its notes, provide a rich analysis: olfactory architecture, how notes interact, performance expectations, ideal occasions, and comparable fragrances. Be technical yet poetic.`,
+  analyze:   `You are SILLAGE's olfactory analysis engine — a master perfumer with encyclopedic knowledge of all fragrances. When given a fragrance name, recall its actual notes from your knowledge and provide a rich, detailed analysis covering: all top, heart and base notes, olfactory architecture, how the notes interact and evolve on skin, longevity, sillage, seasonality, ideal occasions, and 3 similar fragrances to explore. Be technical yet poetic.`,
   layer:     `You are SILLAGE's layering specialist. When given two fragrances, assess compatibility, describe the resulting olfactory profile, and give precise application instructions. Rate the pairing out of 10 and explain why it works.`,
   notes:     `You are SILLAGE's ingredient educator. When asked about an ingredient, provide: origins, extraction method, olfactory character, cultural significance, sustainability notes, and at least 5 iconic fragrances that feature it prominently.`,
   occasion:  `You are SILLAGE's occasion stylist. Analyze the occasion and recommend specific fragrances with clear reasoning. Consider projection, longevity, appropriateness, and season. If the user mentions their collection, prioritize those.`,
@@ -474,7 +474,7 @@ const SYSTEM_PROMPTS = {
 function buildPrompt(type, i) {
   switch (type) {
     case 'recommend': return `Recommend fragrances for me:\nMood: ${i.mood||'sophisticated and elegant'}\nFamilies: ${i.families?.join(', ')||'any'}\nOccasion: ${i.occasion||'everyday'}\nBudget: ${i.budget||'any'}\n\nRecommend 3–4 specific fragrances with house names, key notes, and why each fits.`;
-    case 'analyze':   return `Analyze this fragrance:\nName: ${i.name}\nTop: ${i.top}\nHeart: ${i.heart}\nBase: ${i.base}`;
+    case 'analyze':   return `Please analyze this fragrance. Use your knowledge to recall its actual notes and give a full in-depth analysis:\nFragrance: ${i.name||'Tom Ford Black Orchid'}`;
     case 'layer':     return `Analyze this layering combination:\nFragrance 1: ${i.f1}\nFragrance 2: ${i.f2}\nHow well do they layer? What does it smell like? How should I apply them?`;
     case 'notes':     return `Give me a comprehensive education on this fragrance ingredient: ${i.ingredient}`;
     case 'occasion':  return `Find the perfect fragrance for:\nOccasion: ${i.description}\nSeason: ${i.season?.join(', ')||'not specified'}\n${i.collection?`My Collection: ${i.collection}`:''}`;
@@ -554,26 +554,22 @@ Tip: Always test on skin — fragrance evolves uniquely with your body chemistry
       const name = i.name || 'this fragrance';
       return `In-Depth Analysis: ${name}
 
+Note Profile:
+${name} is a masterfully constructed fragrance built on a classic pyramid structure. Its notes have been carefully selected to create a seamless olfactory journey from first spray to dry-down.
+
 Olfactory Architecture:
-${name} is built as a classic pyramid — top, heart, and base notes each playing a distinct role as the fragrance evolves on skin.
+The opening makes an immediate and intentional statement — bright and distinctive, designed to capture attention within the first few minutes of wear. As the top notes fade, the heart reveals the fragrance's true character and identity, the version that will define how others remember it on you.
 
-Opening (Top Notes: ${i.top || 'citrus and spice'}):
-The opening is your first impression — bright, immediate, and intentional. These volatile molecules make their statement within the first 10–15 minutes before giving way to the heart.
-
-Development (Heart Notes: ${i.heart || 'floral and woody'}):
-This is the soul of the fragrance — the truest expression of its character. The heart reveals itself over the first hour and remains the dominant presence for several hours of wear.
-
-Foundation (Base Notes: ${i.base || 'musk and wood'}):
-The base anchors everything. These long-chain molecules bind to skin and provide longevity. They're what lingers hours after the top notes have gone.
+Development & Dry-Down:
+The base notes anchor the entire composition, binding to skin and ensuring longevity. This is what lingers hours after the initial spray — the most intimate and personal phase of the fragrance.
 
 Performance Profile:
-• Longevity: 7–10 hours (estimated from note structure)
-• Sillage: Moderate — noticeable without overwhelming
-• Seasonality: Versatile, slightly better in cooler months
+• Longevity: 7–10 hours estimated
+• Sillage: Moderate to strong — noticeable presence without overwhelming
+• Seasonality: Versatile across seasons
 • Best worn: Evening and special occasions
 
-Similar Fragrances to Explore:
-If you enjoy this profile, also consider: Tom Ford Noir de Noir, Byredo Black Saffron, Maison Margiela By the Fireplace.`;
+For a full AI-powered analysis including the specific notes of ${name}, activate live AI by adding credits at console.anthropic.com.`;
     }
 
     case 'layer': {
@@ -825,7 +821,7 @@ function collectInputs(type) {
   const tags  = id => [...document.querySelectorAll(`#${id} .tag.selected`)].map(t => t.textContent.trim());
   switch (type) {
     case 'recommend': return { mood: get('rec-mood'), families: tags('rec-families'), occasion: get('rec-occasion'), budget: tags('rec-budget')[0] };
-    case 'analyze':   return { name: get('an-name'), top: get('an-top'), heart: get('an-heart'), base: get('an-base') };
+    case 'analyze':   return { name: get('an-name') };
     case 'layer':     return { f1: get('lay-1'), f2: get('lay-2') };
     case 'notes':     return { ingredient: get('notes-ing') };
     case 'occasion':  return { description: get('occ-desc'), season: tags('occ-season'), collection: get('occ-col') };
@@ -897,10 +893,8 @@ const PANELS = {
   analyze: {
     title:'Fragrance Analyzer', sub:'Deep Olfactory Profile',
     html: () => `
-      <div class="form-group"><label class="form-label">Fragrance Name & House</label><input class="form-input" id="an-name" value="Tom Ford Black Orchid"></div>
-      <div class="form-group"><label class="form-label">Top Notes</label><input class="form-input" id="an-top" value="black truffle, bergamot, black currant"></div>
-      <div class="form-group"><label class="form-label">Heart Notes</label><input class="form-input" id="an-heart" value="black orchid, ylang-ylang, lotus wood"></div>
-      <div class="form-group"><label class="form-label">Base Notes</label><input class="form-input" id="an-base" value="patchouli, vanilla, incense, sandalwood"></div>
+      <p style="font-size:0.7rem;color:rgba(245,240,232,0.5);line-height:2;margin-bottom:1.5rem">Enter any fragrance name and AI will look up its notes and give you a full in-depth analysis.</p>
+      <div class="form-group"><label class="form-label">Fragrance Name & House</label><input class="form-input" id="an-name" placeholder="e.g. Tom Ford Black Orchid, Chanel No. 5…"></div>
       ${runBtn('analyze','Analyze Fragrance')}
       ${responseBlock('analyze','AI Analysis')}`,
   },
