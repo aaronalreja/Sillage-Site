@@ -418,10 +418,11 @@ async function runAI(type) {
       // Network error or running locally without Vercel — fall through
     }
 
-    // ── Fall back to local smart responses ──────────────────────────────────
+    // ── Strip markdown symbols before display ───────────────────────────────
     if (!responseText) {
       responseText = generateLocalResponse(type, inputs);
     }
+    responseText = stripMarkdown(responseText);
 
     // Typewriter reveal
     textDiv.textContent = '';
@@ -436,6 +437,18 @@ async function runAI(type) {
     if (retryBtn) retryBtn.style.display = 'inline-block';
     if (runBtn)   runBtn.disabled        = false;
   }
+}
+
+// Strips markdown symbols so plain text renders cleanly
+function stripMarkdown(text) {
+  return text
+    .replace(/^#{1,6}\s+/gm, '')        // ## headings
+    .replace(/\*\*(.+?)\*\*/g, '$1')    // **bold**
+    .replace(/\*(.+?)\*/g, '$1')        // *italic*
+    .replace(/^---+$/gm, '')            // --- dividers
+    .replace(/^- /gm, '• ')            // - lists → bullet
+    .replace(/\n{3,}/g, '\n\n')         // collapse excess blank lines
+    .trim();
 }
 
 function typewriter(el, text, speed = 8) {
@@ -457,8 +470,8 @@ function retryAI(type) { runAI(type); }
 // SYSTEM PROMPTS (used in live mode)
 // ─────────────────────────────────────────────────────────────────────────────
 const SYSTEM_PROMPTS = {
-  recommend: `You are SILLAGE's expert AI fragrance consultant — a master perfumer with encyclopedic knowledge of fine fragrances. Give beautifully written, deeply personalized scent recommendations. Be specific with names, houses, notes, and why each suits the user's stated mood and occasion. Be warm, expert, and evocative.`,
-  analyze:   `You are SILLAGE's olfactory analysis engine — a master perfumer with encyclopedic knowledge of all fragrances. When given a fragrance name, recall its actual notes from your knowledge and provide a rich, detailed analysis covering: all top, heart and base notes, olfactory architecture, how the notes interact and evolve on skin, longevity, sillage, seasonality, ideal occasions, and 3 similar fragrances to explore. Be technical yet poetic.`,
+  recommend: `You are SILLAGE's expert AI fragrance consultant — a master perfumer with encyclopedic knowledge of fine fragrances. Give beautifully written, deeply personalized scent recommendations. Be specific with names, houses, notes, and why each suits the user's stated mood and occasion. Be warm, expert, and evocative. Do not use markdown formatting — write in plain text with clear section headings.`,
+  analyze:   `You are SILLAGE's olfactory analysis engine — a master perfumer with encyclopedic knowledge of fragrances. When given a fragrance name, recall its actual notes from your knowledge and provide a rich, detailed analysis. IMPORTANT: If you are not certain of the exact notes for a fragrance, say so clearly and only include notes you are confident about. Never guess or fabricate notes. Cover: confirmed top, heart and base notes, olfactory architecture, how notes interact and evolve, longevity, sillage, seasonality, ideal occasions, and 3 similar fragrances. Be technical yet poetic. Do not use markdown formatting — write in plain text with clear section headings.`,
   layer:     `You are SILLAGE's layering specialist. When given two fragrances, assess compatibility, describe the resulting olfactory profile, and give precise application instructions. Rate the pairing out of 10 and explain why it works.`,
   notes:     `You are SILLAGE's ingredient educator. When asked about an ingredient, provide: origins, extraction method, olfactory character, cultural significance, sustainability notes, and at least 5 iconic fragrances that feature it prominently.`,
   occasion:  `You are SILLAGE's occasion stylist. Analyze the occasion and recommend specific fragrances with clear reasoning. Consider projection, longevity, appropriateness, and season. If the user mentions their collection, prioritize those.`,
@@ -473,7 +486,7 @@ const SYSTEM_PROMPTS = {
 // ─────────────────────────────────────────────────────────────────────────────
 function buildPrompt(type, i) {
   switch (type) {
-    case 'recommend': return `Recommend fragrances for me:\nMood: ${i.mood||'sophisticated and elegant'}\nFamilies: ${i.families?.join(', ')||'any'}\nOccasion: ${i.occasion||'everyday'}\nBudget: ${i.budget||'any'}\n\nRecommend 3–4 specific fragrances with house names, key notes, and why each fits.`;
+    case 'recommend': return `Recommend fragrances for me:\nMood: ${i.mood||'sophisticated and elegant'}\nFamilies: ${i.families?.join(', ')||'any'}\nOccasion: ${i.occasion||'everyday'}\nBudget: ${i.budget||'any'}\nGender: ${i.gender||'any — masculine, feminine, or unisex'}\n\nRecommend 3–4 specific fragrances with house names, key notes, and why each fits. Only recommend fragrances that match the specified gender category.`;
     case 'analyze':   return `Please analyze this fragrance. Use your knowledge to recall its actual notes and give a full in-depth analysis:\nFragrance: ${i.name||'Tom Ford Black Orchid'}`;
     case 'layer':     return `Analyze this layering combination:\nFragrance 1: ${i.f1}\nFragrance 2: ${i.f2}\nHow well do they layer? What does it smell like? How should I apply them?`;
     case 'notes':     return `Give me a comprehensive education on this fragrance ingredient: ${i.ingredient}`;
@@ -525,6 +538,7 @@ function generateLocalResponse(type, i) {
       const families = i.families?.length ? i.families : ['Woody', 'Floral'];
       const occasion = i.occasion || 'everyday';
       const budget = i.budget || 'any';
+      const gender = i.gender || '';
       const picks = [];
       families.forEach(f => {
         const list = DB[f.toLowerCase()] || DB.woody;
@@ -533,7 +547,7 @@ function generateLocalResponse(type, i) {
       const top3 = [...new Set(picks)].slice(0, 3);
       return `Personalized Recommendations for "${mood}"
 
-Based on your preference for ${families.join(' and ')} fragrances for ${occasion} wear${budget !== 'any' ? ` within the ${budget} range` : ''}, here are my curated selections:
+Based on your preference for ${families.join(' and ')} fragrances${gender ? ` (${gender.toLowerCase()})` : ''} for ${occasion} wear${budget !== 'any' ? ` within the ${budget} range` : ''}, here are my curated selections:
 
 ${top3[0] || 'Santal 33 by Le Labo'}
 A modern icon that perfectly captures ${mood.toLowerCase()} energy. Creamy sandalwood anchored by violet, cardamom, and papyrus — it creates a warm, enveloping presence ideal for ${occasion} wear. Moderate-to-strong projection, exceptional longevity.
@@ -820,7 +834,7 @@ function collectInputs(type) {
   const get   = id => document.getElementById(id)?.value || '';
   const tags  = id => [...document.querySelectorAll(`#${id} .tag.selected`)].map(t => t.textContent.trim());
   switch (type) {
-    case 'recommend': return { mood: get('rec-mood'), families: tags('rec-families'), occasion: get('rec-occasion'), budget: tags('rec-budget')[0] };
+    case 'recommend': return { mood: get('rec-mood'), families: tags('rec-families'), occasion: get('rec-occasion'), budget: tags('rec-budget')[0], gender: tags('rec-gender')[0] };
     case 'analyze':   return { name: get('an-name') };
     case 'layer':     return { f1: get('lay-1'), f2: get('lay-2') };
     case 'notes':     return { ingredient: get('notes-ing') };
@@ -882,6 +896,10 @@ const PANELS = {
           <option value="office">Office</option><option value="special">Special Occasion</option>
           <option value="summer">Summer</option><option value="winter">Winter</option>
         </select></div>
+      <div class="form-group"><label class="form-label">Gender</label>
+        <div class="tag-row" id="rec-gender">
+          ${['Masculine','Feminine','Unisex'].map(g=>`<span class="tag" onclick="toggleTag(this,'rec-gender',true)">${g}</span>`).join('')}
+        </div></div>
       <div class="form-group"><label class="form-label">Budget</label>
         <div class="tag-row" id="rec-budget">
           ${['Under $50','$50–$150','$150–$300','$300+','No limit'].map(b=>`<span class="tag" onclick="toggleTag(this,'rec-budget',true)">${b}</span>`).join('')}
