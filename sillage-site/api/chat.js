@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY2;
 
   // ── LOCAL MODE (no API key yet) ──────────────────────────────────────────
   // Returns a clear message so the frontend knows to use local responses.
